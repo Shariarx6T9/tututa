@@ -1,0 +1,8 @@
+# .gitignore
+.env
+.env.local
+.env.production
+node_modules/
+.next/
+uploads/
+*.log
