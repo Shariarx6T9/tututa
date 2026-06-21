@@ -1,9 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  cacheComponents: true,
   experimental: {
-    ppr: true,
-    reactCompiler: true,
     typedRoutes: true,
   },
   images: {
@@ -12,7 +11,6 @@ const nextConfig: NextConfig = {
       { hostname: "127.0.0.1" },
     ],
   },
-  // Allow large response streaming
   serverExternalPackages: ["pdf-parse", "sharp"],
 };
 
