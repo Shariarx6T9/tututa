@@ -75,7 +75,7 @@ export function CommandPalette({ onClose }: CommandPaletteProps) {
     label: truncate(chat.title, 50),
     description: `Chat · ${chat.model}`,
     icon: MessageSquare,
-    action: () => navigate(`/chat/${chat.id}`),
+    action: () => navigate(`/chat/${chat.id}` as never),
   }));
 
   const taskCommands: CommandItem[] = tasks
