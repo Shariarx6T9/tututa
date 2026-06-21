@@ -13,7 +13,7 @@ interface QuantumOrbProps {
 export function QuantumOrb({ size = 36, className = "", forceState }: QuantumOrbProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { stream } = useChatStore();
-  const animFrameRef = useRef<number>();
+  const animFrameRef = useRef<number>(0);
   const timeRef = useRef(0);
 
   const state = forceState ?? (stream.isStreaming ? "speaking" : "idle");

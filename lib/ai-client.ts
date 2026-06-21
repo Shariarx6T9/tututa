@@ -114,7 +114,7 @@ async function* streamOllama(
     return;
   }
 
-  yield* readNDJSONStream(res, (data) => data.message?.content ?? "");
+  yield* readNDJSONStream(res, (data) => (data.message as { content?: string })?.content ?? "");
 }
 
 // ── OpenAI-compatible stream (Groq, OpenRouter, OpenAI) ──────
