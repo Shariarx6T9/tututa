@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
+import type { Route } from "next";
 import {
   Search, MessageSquare, Brain, CheckSquare, BookOpen,
   Code2, Image, LayoutDashboard, Settings, Plus,
@@ -41,8 +42,8 @@ export function CommandPalette({ onClose }: CommandPaletteProps) {
     inputRef.current?.focus();
   }, []);
 
-  const navigate = (href: string) => {
-    router.push(href);
+  const navigate = (href: Route) => {
+    router.push(href as never);
     onClose();
   };
 
