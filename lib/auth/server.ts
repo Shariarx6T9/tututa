@@ -2,12 +2,18 @@
 // AYRA — Neon Auth Server Instance
 // ============================================================
 
-import { createNeonAuth } from "@neondatabase/auth/next/server";
+import { createServerAuth } from "@neondatabase/auth/next/server";
 
-// The two env vars come from: Neon Console → your project → Auth → Setup Guide
-export const auth = createNeonAuth({
-  baseUrl: process.env.NEON_AUTH_BASE_URL!,
-  cookies: {
-    secret: process.env.NEON_AUTH_COOKIE_SECRET!,
-  },
+const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+
+export const auth = createServerAuth({
+  baseUrl:      process.env.NEON_AUTH_BASE_URL!,
+  cookieSecret: process.env.NEON_AUTH_COOKIE_SECRET!,
+  trustedOrigins: [
+    appUrl,
+    "http://localhost:3000",
+    "http://localhost:3001",
+    // Vercel preview URLs
+    ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
+  ],
 });
