@@ -1,0 +1,413 @@
+@import "tailwindcss";
+
+/* ============================================================
+   AYRA — Design System
+   ============================================================ */
+
+@theme {
+  /* ── Colors ─────────────────────────────────────── */
+  --color-void:        #050507;
+  --color-surface-0:   #0a0a0e;
+  --color-surface-1:   #0f0f14;
+  --color-surface-2:   #141419;
+  --color-surface-3:   #1a1a22;
+  --color-surface-4:   #21212c;
+
+  --color-border:      rgba(255, 255, 255, 0.06);
+  --color-border-soft: rgba(255, 255, 255, 0.04);
+  --color-border-hi:   rgba(255, 255, 255, 0.12);
+
+  --color-glass:       rgba(15, 15, 20, 0.65);
+  --color-glass-hi:    rgba(255, 255, 255, 0.03);
+  --color-glass-border: rgba(255, 255, 255, 0.07);
+
+  /* Violet — primary accent */
+  --color-violet-50:  #f5f3ff;
+  --color-violet-100: #ede9fe;
+  --color-violet-200: #ddd6fe;
+  --color-violet-300: #c4b5fd;
+  --color-violet-400: #a78bfa;
+  --color-violet-500: #8b5cf6;
+  --color-violet-600: #7c3aed;
+  --color-violet-700: #6d28d9;
+  --color-violet-800: #5b21b6;
+  --color-violet-900: #4c1d95;
+
+  /* Cyan — secondary accent */
+  --color-cyan-400:   #22d3ee;
+  --color-cyan-500:   #06b6d4;
+  --color-cyan-600:   #0891b2;
+
+  /* Rose — danger / important */
+  --color-rose-400:   #fb7185;
+  --color-rose-500:   #f43f5e;
+
+  /* Amber — warnings */
+  --color-amber-400:  #fbbf24;
+  --color-amber-500:  #f59e0b;
+
+  /* Emerald — success */
+  --color-emerald-400: #34d399;
+  --color-emerald-500: #10b981;
+
+  /* Text */
+  --color-text-primary:   #f0f0f8;
+  --color-text-secondary: #9090a8;
+  --color-text-muted:     #4a4a62;
+  --color-text-ghost:     #2a2a3a;
+
+  /* ── Typography ──────────────────────────────────── */
+  --font-sans:   "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono:   "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* ── Spacing ─────────────────────────────────────── */
+  --spacing-sidebar: 260px;
+  --spacing-sidebar-collapsed: 64px;
+
+  /* ── Radii ───────────────────────────────────────── */
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  14px;
+  --radius-xl:  20px;
+  --radius-2xl: 28px;
+  --radius-pill: 999px;
+
+  /* ── Shadows ─────────────────────────────────────── */
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(255,255,255,0.06) inset;
+  --shadow-glow-violet: 0 0 40px rgba(124, 58, 237, 0.25);
+  --shadow-glow-cyan:   0 0 40px rgba(6, 182, 212, 0.2);
+  --shadow-elevated: 0 24px 48px rgba(0, 0, 0, 0.6), 0 8px 16px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(255,255,255,0.04) inset;
+
+  /* ── Animations ──────────────────────────────────── */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-expo: cubic-bezier(0.7, 0, 0.84, 0);
+
+  /* ── Z-Index ─────────────────────────────────────── */
+  --z-base:    0;
+  --z-above:   10;
+  --z-sidebar: 100;
+  --z-modal:   200;
+  --z-toast:   300;
+  --z-supreme: 400;
+}
+
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  border-color: var(--color-border);
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-void);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: rgba(124, 58, 237, 0.35);
+  color: #f0f0f8;
+}
+
+:focus-visible {
+  outline: 2px solid rgba(124, 58, 237, 0.6);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ============================================================
+   GLASS MORPHISM UTILITIES
+   ============================================================ */
+
+.glass {
+  background: var(--color-glass);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--color-glass-border);
+}
+
+.glass-surface {
+  background: rgba(15, 15, 20, 0.8);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.glass-card {
+  background: var(--color-surface-1);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: var(--shadow-card);
+}
+
+.glass-card:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: var(--color-surface-2);
+}
+
+/* ============================================================
+   AYRA GLOW EFFECTS
+   ============================================================ */
+
+.glow-violet {
+  box-shadow: 0 0 20px rgba(124, 58, 237, 0.3), 0 0 60px rgba(124, 58, 237, 0.1);
+}
+
+.glow-violet-text {
+  text-shadow: 0 0 20px rgba(139, 92, 246, 0.6);
+}
+
+.glow-cyan {
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+}
+
+.gradient-violet {
+  background: linear-gradient(135deg, #7c3aed, #5b21b6);
+}
+
+.gradient-aurora {
+  background: linear-gradient(135deg, #7c3aed 0%, #06b6d4 50%, #10b981 100%);
+}
+
+.gradient-text-violet {
+  background: linear-gradient(135deg, #a78bfa, #7c3aed);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-aurora {
+  background: linear-gradient(135deg, #a78bfa 0%, #22d3ee 60%, #34d399 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ============================================================
+   NOISE TEXTURE (Subtle film grain)
+   ============================================================ */
+
+.noise::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  border-radius: inherit;
+  opacity: 0.4;
+}
+
+/* ============================================================
+   AYRA PULSE ANIMATION
+   ============================================================ */
+
+@keyframes ayra-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.75; transform: scale(0.97); }
+}
+
+@keyframes ayra-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes ayra-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+
+@keyframes ayra-shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+@keyframes ayra-scan {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+
+@keyframes ayra-orb-idle {
+  0%   { transform: scale(1)    rotate(0deg);   filter: hue-rotate(0deg); }
+  33%  { transform: scale(1.03) rotate(120deg); filter: hue-rotate(20deg); }
+  66%  { transform: scale(0.98) rotate(240deg); filter: hue-rotate(-10deg); }
+  100% { transform: scale(1)    rotate(360deg); filter: hue-rotate(0deg); }
+}
+
+@keyframes ayra-thinking {
+  0%, 100% { opacity: 0.4; transform: scale(0.85); }
+  50%       { opacity: 1.0; transform: scale(1.15); }
+}
+
+.animate-ayra-pulse    { animation: ayra-pulse 2s ease-in-out infinite; }
+.animate-ayra-float    { animation: ayra-float 3s ease-in-out infinite; }
+.animate-ayra-spin     { animation: ayra-spin 8s linear infinite; }
+.animate-ayra-shimmer  { animation: ayra-shimmer 1.5s linear infinite; }
+.animate-ayra-thinking { animation: ayra-thinking 1.2s ease-in-out infinite; }
+.animate-ayra-orb      { animation: ayra-orb-idle 12s ease-in-out infinite; }
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.04) 25%,
+    rgba(255,255,255,0.08) 50%,
+    rgba(255,255,255,0.04) 75%
+  );
+  background-size: 800px 100%;
+  animation: ayra-shimmer 1.5s infinite;
+}
+
+/* ============================================================
+   MARKDOWN CONTENT
+   ============================================================ */
+
+.prose-ayra {
+  color: var(--color-text-primary);
+  line-height: 1.75;
+}
+
+.prose-ayra h1, .prose-ayra h2, .prose-ayra h3 {
+  color: #f0f0f8;
+  font-weight: 600;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.prose-ayra h1 { font-size: 1.5em; }
+.prose-ayra h2 { font-size: 1.25em; }
+.prose-ayra h3 { font-size: 1.1em; }
+
+.prose-ayra p { margin-bottom: 0.875em; }
+
+.prose-ayra code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background: rgba(124, 58, 237, 0.12);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+  color: #c4b5fd;
+}
+
+.prose-ayra pre {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+
+.prose-ayra pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #e2e8f0;
+  font-size: 0.875em;
+}
+
+.prose-ayra ul, .prose-ayra ol {
+  padding-left: 1.5em;
+  margin-bottom: 0.875em;
+}
+
+.prose-ayra li { margin-bottom: 0.25em; }
+
+.prose-ayra blockquote {
+  border-left: 3px solid rgba(124, 58, 237, 0.5);
+  padding-left: 1em;
+  color: var(--color-text-secondary);
+  margin: 1em 0;
+  font-style: italic;
+}
+
+.prose-ayra table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 0.875em;
+}
+
+.prose-ayra th {
+  background: rgba(124, 58, 237, 0.1);
+  padding: 0.5em 0.75em;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-weight: 600;
+}
+
+.prose-ayra td {
+  padding: 0.5em 0.75em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.prose-ayra a {
+  color: #a78bfa;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.prose-ayra a:hover { color: #c4b5fd; }
+
+.prose-ayra hr {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 1.5em 0;
+}
+
+/* ============================================================
+   TRANSITIONS
+   ============================================================ */
+
+.transition-base { transition: all 150ms var(--ease-out-expo); }
+.transition-slow  { transition: all 300ms var(--ease-out-expo); }
+.transition-spring { transition: all 400ms var(--ease-spring); }
+
+/* ============================================================
+   LAYOUT UTILITIES
+   ============================================================ */
+
+.sidebar-width   { width: var(--spacing-sidebar); }
+.sidebar-content { margin-left: var(--spacing-sidebar); }
+
+@media (max-width: 768px) {
+  .sidebar-content { margin-left: 0; }
+}

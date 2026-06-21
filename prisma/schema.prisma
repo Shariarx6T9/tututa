@@ -1,0 +1,570 @@
+// ============================================================
+// AYRA — AI Operating System
+// Database Schema v1.0
+// ============================================================
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// USER & AUTH
+// ============================================================
+
+// Note: Neon Auth manages its own `neon_auth.users_sync` table.
+// The AYRA User model is linked to it via matching email.
+// userId in all AYRA models = neon_auth.users_sync.id (a UUID string).
+
+model User {
+  // id matches the UUID that Neon Auth assigns in neon_auth.users_sync
+  id          String   @id @default(cuid())
+  name        String
+  email       String   @unique
+  avatar      String?
+  // password field is NOT used when Neon Auth is enabled —
+  // authentication is handled entirely by Neon Auth / Stack Auth.
+  password    String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  chats           Chat[]
+  chatFolders     ChatFolder[]
+  memories        Memory[]
+  memoryProfiles  MemoryProfile[]
+  tasks           Task[]
+  taskCollections TaskCollection[]
+  vaultItems      VaultItem[]
+  vaultFolders    VaultFolder[]
+  codeProjects    CodeProject[]
+  codeFiles       CodeFile[]
+  studioImages    StudioImage[]
+  studioCollections StudioCollection[]
+  settings        UserSettings?
+
+  @@map("users")
+}
+
+model UserSettings {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // AI Model Settings
+  defaultModel    String   @default("llama3.2")
+  ollamaHost      String   @default("http://localhost:11434")
+  temperature     Float    @default(0.7)
+  maxTokens       Int      @default(4096)
+  systemPrompt    String?  @db.Text
+
+  // UI Settings
+  sidebarCollapsed Boolean @default(false)
+  accentColor     String  @default("#7C3AED")
+  fontSize        String  @default("md")
+
+  // Feature Flags
+  memoryEnabled   Boolean @default(true)
+  streamingEnabled Boolean @default(true)
+  codeCompletionEnabled Boolean @default(true)
+
+  // Image Studio Settings
+  sdHost          String  @default("http://localhost:7860")
+  comfyHost       String  @default("http://localhost:8188")
+  imageEngine     String  @default("stable-diffusion")
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("user_settings")
+}
+
+// ============================================================
+// CHAT SYSTEM
+// ============================================================
+
+model ChatFolder {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  color     String?
+  icon      String?
+  position  Int      @default(0)
+  isExpanded Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  chats     Chat[]
+
+  @@map("chat_folders")
+}
+
+model Chat {
+  id          String      @id @default(cuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folderId    String?
+  folder      ChatFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+
+  title       String
+  summary     String?     @db.Text
+  model       String      @default("llama3.2")
+  isPinned    Boolean     @default(false)
+  isArchived  Boolean     @default(false)
+  tags        String[]    @default([])
+  tokenCount  Int         @default(0)
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  lastMessageAt DateTime? 
+
+  messages    Message[]
+
+  @@index([userId, createdAt])
+  @@index([userId, lastMessageAt])
+  @@map("chats")
+}
+
+model Message {
+  id          String      @id @default(cuid())
+  chatId      String
+  chat        Chat        @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  role        MessageRole
+  content     String      @db.Text
+  thinking    String?     @db.Text     // For chain-of-thought
+  model       String?
+  tokenCount  Int?
+  latency     Int?        // ms
+
+  // Attachments
+  attachments Attachment[]
+
+  // Code blocks extracted
+  codeBlocks  Json?
+
+  // Metadata
+  isEdited    Boolean     @default(false)
+  editedAt    DateTime?
+  isDeleted   Boolean     @default(false)
+
+  createdAt   DateTime    @default(now())
+
+  @@index([chatId, createdAt])
+  @@map("messages")
+}
+
+enum MessageRole {
+  user
+  assistant
+  system
+}
+
+model Attachment {
+  id          String      @id @default(cuid())
+  messageId   String
+  message     Message     @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  filename    String
+  mimeType    String
+  size        Int
+  url         String
+  content     String?     @db.Text    // Extracted text content
+
+  createdAt   DateTime    @default(now())
+
+  @@map("attachments")
+}
+
+// ============================================================
+// MEMORY SYSTEM
+// ============================================================
+
+enum MemoryType {
+  FACT
+  PREFERENCE
+  PROJECT
+  RELATIONSHIP
+  GOAL
+  SKILL
+  CONTEXT
+  MEDICAL
+  FINANCIAL
+  PERSONAL
+}
+
+enum MemoryImportance {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model Memory {
+  id          String           @id @default(cuid())
+  userId      String
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type        MemoryType
+  importance  MemoryImportance @default(MEDIUM)
+  title       String
+  content     String           @db.Text
+  context     String?          @db.Text
+  tags        String[]         @default([])
+  source      String?          // chat ID, manual, etc.
+  embedding   Float[]          // Vector for semantic search
+  confidence  Float            @default(1.0)
+  isVerified  Boolean          @default(false)
+  isPinned    Boolean          @default(false)
+  expiresAt   DateTime?
+
+  accessCount Int              @default(0)
+  lastAccessed DateTime?
+
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([userId, type])
+  @@index([userId, importance])
+  @@map("memories")
+}
+
+model MemoryProfile {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Personal Identity
+  preferredName String?
+  pronouns    String?
+  timezone    String?
+  location    String?
+  occupation  String?
+  bio         String?  @db.Text
+
+  // AI Interaction Preferences
+  communicationStyle String? // formal, casual, technical, etc.
+  preferredLanguage  String?  @default("en")
+  expertiseLevel     String?  // beginner, intermediate, expert
+  interests          String[] @default([])
+  dislikedTopics     String[] @default([])
+
+  // Behavioral Patterns (AI-observed)
+  activeHours        Json?    // {"weekday": [9,17], "weekend": [10,14]}
+  workingStyle       String?  // async, sync, deep-work, etc.
+
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId])
+  @@map("memory_profiles")
+}
+
+// ============================================================
+// TASK SYSTEM
+// ============================================================
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  CANCELLED
+  DEFERRED
+}
+
+enum TaskPriority {
+  NONE
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum RecurrenceType {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+  CUSTOM
+}
+
+model TaskCollection {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name      String
+  icon      String?
+  color     String?
+  isDefault Boolean  @default(false)
+  position  Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tasks     Task[]
+
+  @@map("task_collections")
+}
+
+model Task {
+  id            String         @id @default(cuid())
+  userId        String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collectionId  String?
+  collection    TaskCollection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  parentId      String?
+  parent        Task?          @relation("TaskChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children      Task[]         @relation("TaskChildren")
+
+  title         String
+  description   String?        @db.Text
+  status        TaskStatus     @default(TODO)
+  priority      TaskPriority   @default(NONE)
+  tags          String[]       @default([])
+
+  // Scheduling
+  dueDate       DateTime?
+  dueTime       String?        // HH:MM
+  startDate     DateTime?
+  completedAt   DateTime?
+  reminderAt    DateTime?
+
+  // Recurrence
+  isRecurring   Boolean        @default(false)
+  recurrenceType RecurrenceType?
+  recurrenceRule String?       // RRULE string
+  recurrenceEnd  DateTime?
+
+  // AI-generated
+  aiGenerated   Boolean        @default(false)
+  estimatedMin  Int?           // Estimated minutes to complete
+
+  position      Int            @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([userId, status])
+  @@index([userId, dueDate])
+  @@map("tasks")
+}
+
+// ============================================================
+// KNOWLEDGE VAULT
+// ============================================================
+
+enum VaultItemType {
+  PDF
+  DOCUMENT
+  NOTE
+  IMAGE
+  PRESCRIPTION
+  MEDICAL_REPORT
+  FINANCIAL
+  CODE
+  LINK
+  OTHER
+}
+
+model VaultFolder {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentId  String?
+  parent    VaultFolder? @relation("FolderChildren", fields: [parentId], references: [id])
+  children  VaultFolder[] @relation("FolderChildren")
+
+  name      String
+  icon      String?
+  color     String?
+  isPrivate Boolean     @default(false)
+  position  Int         @default(0)
+
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  items     VaultItem[]
+
+  @@map("vault_folders")
+}
+
+model VaultItem {
+  id          String        @id @default(cuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folderId    String?
+  folder      VaultFolder?  @relation(fields: [folderId], references: [id], onDelete: SetNull)
+
+  type        VaultItemType
+  title       String
+  description String?       @db.Text
+  content     String?       @db.Text    // Extracted/plain text
+  rawContent  String?       @db.Text    // For notes: markdown
+  url         String?                   // File URL
+  filename    String?
+  mimeType    String?
+  size        Int?
+  pageCount   Int?
+  tags        String[]      @default([])
+  metadata    Json?                     // Extra structured data
+  embedding   Float[]                   // Vector for semantic search
+
+  // For notes
+  isNote      Boolean       @default(false)
+  isPinned    Boolean       @default(false)
+
+  // Processing state
+  isProcessed Boolean       @default(false)
+  processedAt DateTime?
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([userId, type])
+  @@index([userId, createdAt])
+  @@map("vault_items")
+}
+
+// ============================================================
+// CODE WORKSPACE
+// ============================================================
+
+enum ProjectLanguage {
+  JAVASCRIPT
+  TYPESCRIPT
+  PYTHON
+  RUST
+  GO
+  JAVA
+  CPP
+  CSS
+  HTML
+  SQL
+  SHELL
+  MARKDOWN
+  JSON
+  YAML
+  OTHER
+}
+
+model CodeProject {
+  id          String          @id @default(cuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?         @db.Text
+  language    ProjectLanguage @default(OTHER)
+  framework   String?
+  tags        String[]        @default([])
+  context     String?         @db.Text    // Project context for AI
+  isActive    Boolean         @default(true)
+
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  files       CodeFile[]
+  sessions    CodeSession[]
+
+  @@map("code_projects")
+}
+
+model CodeFile {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId String?
+  project   CodeProject? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  filename  String
+  path      String
+  language  String
+  content   String      @db.Text
+  size      Int
+  isPrimary Boolean     @default(false)
+
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@map("code_files")
+}
+
+model CodeSession {
+  id          String      @id @default(cuid())
+  projectId   String
+  project     CodeProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  title       String?
+  messages    Json[]      @default([])  // Stored conversation
+  totalTokens Int         @default(0)
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("code_sessions")
+}
+
+// ============================================================
+// IMAGE STUDIO
+// ============================================================
+
+enum ImageEngine {
+  STABLE_DIFFUSION
+  COMFYUI
+  DALLE
+  OTHER
+}
+
+model StudioCollection {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name      String
+  cover     String?
+  isDefault Boolean  @default(false)
+  position  Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  images    StudioImage[]
+
+  @@map("studio_collections")
+}
+
+model StudioImage {
+  id           String           @id @default(cuid())
+  userId       String
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collectionId String?
+  collection   StudioCollection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+
+  prompt       String           @db.Text
+  negativePrompt String?        @db.Text
+  model        String?
+  engine       ImageEngine      @default(STABLE_DIFFUSION)
+  url          String
+  thumbnail    String?
+  width        Int
+  height       Int
+  seed         BigInt?
+  steps        Int?
+  cfgScale     Float?
+  sampler      String?
+  workflow     Json?            // ComfyUI workflow
+  metadata     Json?
+
+  isFavorite   Boolean          @default(false)
+  tags         String[]         @default([])
+
+  createdAt    DateTime         @default(now())
+
+  @@index([userId, createdAt])
+  @@map("studio_images")
+}
