@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
-  Settings, Cpu, Brain, Palette,
+  Settings, Cpu, Brain, Palette, Shield,
   Database, Wifi, WifiOff, Check, Save, RefreshCw,
   Trash2, Download, Upload, Server, User,
 } from "lucide-react";

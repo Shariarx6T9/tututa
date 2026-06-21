@@ -2,7 +2,6 @@
 
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/server";
-import { headers } from "next/headers";
 
 export async function signInWithEmail(
   _prev: { error: string } | null,
@@ -15,12 +14,7 @@ export async function signInWithEmail(
     return { error: "Email and password are required." };
   }
 
-  const hdrs = await headers();
-
-  const { error } = await auth.signIn.email(
-    { email, password },
-    { headers: hdrs }
-  );
+  const { error } = await auth.signIn.email({ email, password });
 
   if (error) {
     return { error: error.message ?? "Invalid email or password." };
@@ -30,7 +24,6 @@ export async function signInWithEmail(
 }
 
 export async function signOutAction() {
-  const hdrs = await headers();
-  await auth.signOut({ headers: hdrs });
+  await auth.signOut();
   redirect("/auth/sign-in");
 }

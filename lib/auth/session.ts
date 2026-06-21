@@ -6,7 +6,6 @@
 import { auth }     from "@/lib/auth/server";
 import { prisma }   from "@/lib/prisma";
 import { redirect } from "next/navigation";
-import { headers }  from "next/headers";
 
 // ── Types ─────────────────────────────────────────────────────
 
@@ -19,16 +18,18 @@ export interface SessionUser {
 
 // ── getSession ────────────────────────────────────────────────
 // Returns null when no session exists (use for optional auth).
+// In @neondatabase/auth >=0.4, getSession() reads from next/headers automatically.
 
 export async function getSession(): Promise<SessionUser | null> {
   try {
-    const session = await auth.getSession({ headers: await headers() });
-    if (!session?.user) return null;
+    const session = await auth.getSession();
+    if (!session?.data?.user) return null;
+    const user = session.data.user;
     return {
-      id:    session.user.id,
-      name:  session.user.name  ?? "AYRA User",
-      email: session.user.email ?? "",
-      image: session.user.image ?? null,
+      id:    user.id,
+      name:  user.name  ?? "AYRA User",
+      email: user.email ?? "",
+      image: user.image ?? null,
     };
   } catch {
     return null;
@@ -37,7 +38,6 @@ export async function getSession(): Promise<SessionUser | null> {
 
 // ── getOrCreateUser ───────────────────────────────────────────
 // Upserts an AYRA User row whose id matches the Neon Auth UUID.
-// Called on every authenticated request so the row always exists.
 
 export async function getOrCreateUser(authUser: SessionUser) {
   return prisma.user.upsert({
@@ -58,7 +58,6 @@ export async function getOrCreateUser(authUser: SessionUser) {
 
 // ── requireSession ────────────────────────────────────────────
 // Redirects to sign-in when unauthenticated.
-// Also ensures a matching AYRA User row exists (upsert pattern).
 
 export async function requireSession(): Promise<SessionUser> {
   const user = await getSession();
@@ -82,18 +81,19 @@ export async function getUserIdFromRequest(req: Request): Promise<string> {
   }
 
   try {
-    const session = await auth.getSession({ headers: req.headers as never });
-    if (!session?.user?.id) return "default";
+    // In route handlers the SDK reads cookies from the incoming request automatically
+    const session = await auth.getSession();
+    if (!session?.data?.user?.id) return "default";
 
-    // Lazily sync the user row on every API call
+    const u = session.data.user;
     await getOrCreateUser({
-      id:    session.user.id,
-      name:  session.user.name  ?? "AYRA User",
-      email: session.user.email ?? "",
-      image: session.user.image ?? null,
+      id:    u.id,
+      name:  u.name  ?? "AYRA User",
+      email: u.email ?? "",
+      image: u.image ?? null,
     });
 
-    return session.user.id;
+    return u.id;
   } catch {
     return "default";
   }

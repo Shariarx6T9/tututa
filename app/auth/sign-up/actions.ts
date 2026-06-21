@@ -2,7 +2,6 @@
 
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/server";
-import { headers } from "next/headers";
 
 export async function signUpWithEmail(
   _prev: { error: string } | null,
@@ -23,12 +22,7 @@ export async function signUpWithEmail(
     return { error: "Passwords do not match." };
   }
 
-  const hdrs = await headers();
-
-  const { error } = await auth.signUp.email(
-    { name, email, password },
-    { headers: hdrs }
-  );
+  const { error } = await auth.signUp.email({ name, email, password });
 
   if (error) {
     return { error: error.message ?? "Could not create account. Try a different email." };
