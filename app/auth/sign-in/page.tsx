@@ -1,276 +1,273 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useRef, useEffect } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { signInWithEmail } from "./actions";
 import Link from "next/link";
 import { Loader2, ArrowRight, Sparkles } from "lucide-react";
 
-/* ── Animated aurora background ─────────────────────────── */
-function Aurora() {
+/* ── CSS injected once to handle input placeholders + body bg ── */
+function GlobalStyles() {
+  useEffect(() => {
+    const style = document.createElement("style");
+    style.textContent = `
+      body { background: #000 !important; margin: 0; padding: 0; }
+      input::placeholder { color: rgba(255,255,255,0.2) !important; }
+      input { color-scheme: dark; }
+      @keyframes orbFloat1 {
+        0%,100% { transform: translate(0,0) scale(1); }
+        33%      { transform: translate(60px,-40px) scale(1.15); }
+        66%      { transform: translate(-30px,60px) scale(0.9); }
+      }
+      @keyframes orbFloat2 {
+        0%,100% { transform: translate(0,0) scale(1); }
+        33%      { transform: translate(-50px,70px) scale(0.85); }
+        66%      { transform: translate(80px,-30px) scale(1.1); }
+      }
+      @keyframes shimmer {
+        from { transform: translateX(-100%); }
+        to   { transform: translateX(300%); }
+      }
+      @keyframes fadein {
+        from { opacity:0; transform:translateY(16px); filter:blur(8px); }
+        to   { opacity:1; transform:translateY(0);    filter:blur(0); }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
+  return null;
+}
+
+export default function SignInPage() {
+  const [state, formAction, isPending] = useActionState(signInWithEmail, null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const bx = useMotionValue(0);
+  const by = useMotionValue(0);
+  const sx = useSpring(bx, { stiffness: 300, damping: 25 });
+  const sy = useSpring(by, { stiffness: 300, damping: 25 });
+
+  /* page wrapper — true viewport-fill centering */
+  const page: React.CSSProperties = {
+    position: "fixed",
+    inset: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontFamily: "Inter, system-ui, -apple-system, sans-serif",
+    background: "#000",
+    overflow: "auto",
+    padding: "24px 16px",
+  };
+
   return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none">
-      {/* Base */}
-      <div style={{ position:"absolute", inset:0, background:"#000000" }} />
+    <div style={page}>
+      <GlobalStyles />
 
-      {/* Orb 1 — violet */}
-      <motion.div
-        animate={{ x:[0,80,-40,0], y:[0,-60,40,0], scale:[1,1.2,0.9,1] }}
-        transition={{ duration:18, repeat:Infinity, ease:"easeInOut" }}
-        style={{
-          position:"absolute", top:"10%", left:"15%",
-          width:700, height:700, borderRadius:"50%",
-          background:"radial-gradient(circle, rgba(124,58,237,0.18) 0%, rgba(124,58,237,0.04) 50%, transparent 70%)",
-          filter:"blur(40px)",
-        }}
-      />
-      {/* Orb 2 — cyan */}
-      <motion.div
-        animate={{ x:[0,-60,80,0], y:[0,80,-40,0], scale:[1,0.85,1.15,1] }}
-        transition={{ duration:22, repeat:Infinity, ease:"easeInOut", delay:3 }}
-        style={{
-          position:"absolute", top:"50%", right:"10%",
-          width:500, height:500, borderRadius:"50%",
-          background:"radial-gradient(circle, rgba(6,182,212,0.12) 0%, rgba(6,182,212,0.03) 50%, transparent 70%)",
-          filter:"blur(40px)",
-        }}
-      />
-      {/* Orb 3 — rose */}
-      <motion.div
-        animate={{ x:[0,40,-80,0], y:[0,-40,60,0], scale:[1,1.1,0.95,1] }}
-        transition={{ duration:26, repeat:Infinity, ease:"easeInOut", delay:7 }}
-        style={{
-          position:"absolute", bottom:"5%", left:"30%",
-          width:400, height:400, borderRadius:"50%",
-          background:"radial-gradient(circle, rgba(244,63,94,0.08) 0%, transparent 70%)",
-          filter:"blur(40px)",
-        }}
-      />
+      {/* ── Background orbs ── */}
+      <div style={{ position:"fixed", inset:0, pointerEvents:"none", overflow:"hidden" }}>
+        {/* Orb violet */}
+        <div style={{
+          position:"absolute", top:"8%", left:"12%",
+          width:640, height:640, borderRadius:"50%",
+          background:"radial-gradient(circle, rgba(124,58,237,0.2) 0%, rgba(124,58,237,0.05) 45%, transparent 70%)",
+          filter:"blur(48px)",
+          animation:"orbFloat1 18s ease-in-out infinite",
+        }} />
+        {/* Orb cyan */}
+        <div style={{
+          position:"absolute", top:"45%", right:"8%",
+          width:480, height:480, borderRadius:"50%",
+          background:"radial-gradient(circle, rgba(6,182,212,0.14) 0%, rgba(6,182,212,0.03) 50%, transparent 70%)",
+          filter:"blur(48px)",
+          animation:"orbFloat2 24s ease-in-out infinite",
+        }} />
+        {/* Dot grid */}
+        <div style={{
+          position:"absolute", inset:0,
+          backgroundImage:"radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px)",
+          backgroundSize:"28px 28px",
+        }} />
+        {/* Vignette */}
+        <div style={{
+          position:"absolute", inset:0,
+          background:"radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%)",
+        }} />
+      </div>
 
-      {/* Dot grid */}
-      <div style={{
-        position:"absolute", inset:0,
-        backgroundImage:"radial-gradient(circle, rgba(255,255,255,0.035) 1px, transparent 1px)",
-        backgroundSize:"32px 32px",
-      }} />
+      {/* ── Card wrapper ── */}
+      <div style={{ position:"relative", zIndex:10, width:"100%", maxWidth:400 }}>
 
-      {/* Top vignette */}
-      <div style={{
-        position:"absolute", top:0, left:0, right:0, height:200,
-        background:"linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)",
-      }} />
+        {/* Logo */}
+        <div style={{
+          display:"flex", alignItems:"center", gap:12, justifyContent:"center",
+          marginBottom:44,
+          animation:"fadein 0.5s ease both",
+        }}>
+          <div style={{
+            width:46, height:46, borderRadius:14, flexShrink:0,
+            background:"linear-gradient(135deg, rgba(124,58,237,0.35), rgba(124,58,237,0.08))",
+            border:"1px solid rgba(124,58,237,0.45)",
+            display:"flex", alignItems:"center", justifyContent:"center",
+            boxShadow:"0 0 32px rgba(124,58,237,0.28), 0 0 8px rgba(124,58,237,0.5) inset",
+          }}>
+            <Sparkles size={20} color="#c4b5fd" />
+          </div>
+          <span style={{
+            fontSize:24, fontWeight:800, letterSpacing:"-0.03em",
+            background:"linear-gradient(135deg,#fff 0%,rgba(255,255,255,0.6) 100%)",
+            WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent",
+          }}>AYRA</span>
+        </div>
 
-      {/* Noise */}
-      <div style={{
-        position:"absolute", inset:0, opacity:0.025,
-        backgroundImage:`url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-      }} />
+        {/* Heading */}
+        <div style={{
+          textAlign:"center", marginBottom:32,
+          animation:"fadein 0.5s 0.06s ease both",
+        }}>
+          <h1 style={{
+            margin:"0 0 8px", fontSize:34, fontWeight:800, letterSpacing:"-0.03em",
+            background:"linear-gradient(160deg, #fff 30%, rgba(255,255,255,0.55) 100%)",
+            WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent",
+          }}>
+            Welcome back
+          </h1>
+          <p style={{ margin:0, fontSize:14, color:"rgba(255,255,255,0.38)", letterSpacing:"0.01em" }}>
+            Sign in to your private AI system
+          </p>
+        </div>
+
+        {/* Glass card */}
+        <div style={{
+          background:"rgba(255,255,255,0.03)",
+          backdropFilter:"blur(32px)", WebkitBackdropFilter:"blur(32px)",
+          border:"1px solid rgba(255,255,255,0.08)",
+          borderRadius:24, padding:"32px 28px",
+          boxShadow:"0 40px 80px rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.05) inset",
+          animation:"fadein 0.5s 0.12s ease both",
+        }}>
+          <form action={formAction} style={{ display:"flex", flexDirection:"column", gap:20 }}>
+
+            {/* Email */}
+            <Field label="Email address" name="email" type="email" placeholder="you@example.com" autoComplete="email" />
+
+            {/* Password */}
+            <Field label="Password" name="password" type="password" placeholder="••••••••" autoComplete="current-password" />
+
+            {/* Error */}
+            {state?.error && (
+              <div style={{
+                display:"flex", alignItems:"center", gap:10,
+                background:"rgba(244,63,94,0.08)", border:"1px solid rgba(244,63,94,0.22)",
+                borderRadius:12, padding:"12px 14px", fontSize:13, color:"#fb7185",
+              }}>
+                <div style={{ width:6, height:6, borderRadius:"50%", background:"#f43f5e", flexShrink:0 }} />
+                {state.error}
+              </div>
+            )}
+
+            {/* Button */}
+            <motion.button
+              ref={btnRef}
+              type="submit"
+              disabled={isPending}
+              onMouseMove={e => {
+                if (!btnRef.current) return;
+                const r = btnRef.current.getBoundingClientRect();
+                bx.set((e.clientX - r.left - r.width / 2) * 0.2);
+                by.set((e.clientY - r.top - r.height / 2) * 0.2);
+              }}
+              onMouseLeave={() => { bx.set(0); by.set(0); }}
+              style={{ x:sx, y:sy, position:"relative", overflow:"hidden", background:"none", border:"none", padding:0, cursor:"pointer", marginTop:4 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              {/* Shimmer sweep */}
+              <div style={{
+                position:"absolute", inset:0, zIndex:1,
+                background:"linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)",
+                animation:"shimmer 2.8s linear infinite",
+                pointerEvents:"none",
+              }} />
+              <div style={{
+                position:"relative", zIndex:2,
+                display:"flex", alignItems:"center", justifyContent:"center", gap:8,
+                background:"linear-gradient(135deg, #6d28d9 0%, #7c3aed 40%, #a855f7 100%)",
+                border:"1px solid rgba(168,85,247,0.55)",
+                borderRadius:14, padding:"15px 24px",
+                fontSize:14, fontWeight:700, color:"#fff", letterSpacing:"0.015em",
+                boxShadow:"0 0 40px rgba(124,58,237,0.4), 0 2px 0 rgba(255,255,255,0.1) inset",
+                opacity: isPending ? 0.65 : 1, transition:"opacity 0.2s",
+              }}>
+                {isPending ? <Loader2 size={15} className="animate-spin" /> : null}
+                {isPending ? "Signing in…" : "Sign in"}
+                {!isPending && <ArrowRight size={15} />}
+              </div>
+            </motion.button>
+          </form>
+        </div>
+
+        {/* Footer links */}
+        <div style={{
+          textAlign:"center", marginTop:24, fontSize:13,
+          color:"rgba(255,255,255,0.25)",
+          animation:"fadein 0.5s 0.22s ease both",
+        }}>
+          No account?{" "}
+          <Link href="/auth/sign-up" style={{ color:"#a78bfa", textDecoration:"none", fontWeight:600 }}>
+            Create one →
+          </Link>
+        </div>
+
+        <div style={{
+          display:"flex", alignItems:"center", justifyContent:"center", gap:7, marginTop:18,
+          animation:"fadein 0.5s 0.28s ease both",
+        }}>
+          <div style={{ width:6, height:6, borderRadius:"50%", background:"#10b981", flexShrink:0 }} />
+          <span style={{ fontSize:11, color:"rgba(255,255,255,0.18)", letterSpacing:"0.06em" }}>
+            End-to-end private · Stored in your Neon database
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
 
-/* ── Magnetic button ─────────────────────────────────────── */
-function MagneticButton({ children, loading, onClick }: { children: React.ReactNode; loading?: boolean; onClick?: () => void }) {
-  const ref = useRef<HTMLButtonElement>(null);
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const sx = useSpring(x, { stiffness: 300, damping: 25 });
-  const sy = useSpring(y, { stiffness: 300, damping: 25 });
-
-  const handleMouse = (e: React.MouseEvent) => {
-    if (!ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    x.set((e.clientX - cx) * 0.25);
-    y.set((e.clientY - cy) * 0.25);
-  };
-
-  return (
-    <motion.button
-      ref={ref}
-      type="submit"
-      disabled={loading}
-      onMouseMove={handleMouse}
-      onMouseLeave={() => { x.set(0); y.set(0); }}
-      style={{ x: sx, y: sy }}
-      whileTap={{ scale: 0.97 }}
-      className="relative w-full overflow-hidden"
-    >
-      {/* Shimmer */}
-      <motion.div
-        animate={{ x: ["-100%", "200%"] }}
-        transition={{ duration: 2.5, repeat: Infinity, ease: "linear", repeatDelay: 1 }}
-        style={{
-          position:"absolute", inset:0,
-          background:"linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)",
-          pointerEvents:"none",
-        }}
-      />
-      <div style={{
-        display:"flex", alignItems:"center", justifyContent:"center", gap:8,
-        background:"linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #7c3aed 100%)",
-        backgroundSize:"200% 100%",
-        border:"1px solid rgba(168,85,247,0.5)",
-        borderRadius:14, padding:"14px 24px",
-        fontSize:14, fontWeight:700, color:"#fff",
-        boxShadow:"0 0 30px rgba(124,58,237,0.35), 0 2px 0 rgba(255,255,255,0.08) inset",
-        cursor: loading ? "not-allowed" : "pointer",
-        opacity: loading ? 0.7 : 1,
-        transition:"all 0.2s ease",
-        letterSpacing:"0.01em",
-      }}>
-        {loading ? <Loader2 size={16} className="animate-spin" /> : null}
-        {children}
-        {!loading && <ArrowRight size={15} />}
-      </div>
-    </motion.button>
-  );
-}
-
-/* ── Premium input ───────────────────────────────────────── */
-function PremiumInput({ label, name, type = "text", placeholder, autoComplete }: {
-  label: string; name: string; type?: string; placeholder: string; autoComplete?: string;
+/* ── Shared field component ─────────────────────────────── */
+function Field({ label, name, type, placeholder, autoComplete }: {
+  label:string; name:string; type:string; placeholder:string; autoComplete?:string;
 }) {
   return (
-    <div style={{ position:"relative" }}>
-      <label style={{ display:"block", fontSize:11, fontWeight:600, letterSpacing:"0.08em", textTransform:"uppercase", color:"rgba(255,255,255,0.35)", marginBottom:8 }}>
+    <div>
+      <label style={{
+        display:"block", fontSize:11, fontWeight:600,
+        letterSpacing:"0.08em", textTransform:"uppercase",
+        color:"rgba(255,255,255,0.32)", marginBottom:8,
+      }}>
         {label}
       </label>
       <input
         name={name} type={type} placeholder={placeholder}
         autoComplete={autoComplete} required
         style={{
-          width:"100%", background:"rgba(255,255,255,0.04)",
-          border:"1px solid rgba(255,255,255,0.08)",
+          display:"block", width:"100%", boxSizing:"border-box",
+          background:"rgba(255,255,255,0.05)",
+          border:"1px solid rgba(255,255,255,0.1)",
           borderRadius:12, padding:"14px 16px",
           fontSize:14, color:"#fff",
-          outline:"none", transition:"all 0.2s ease",
+          outline:"none", transition:"border-color 0.2s, box-shadow 0.2s, background 0.2s",
           letterSpacing:"0.01em",
         }}
         onFocus={e => {
-          e.target.style.borderColor = "rgba(124,58,237,0.7)";
-          e.target.style.background  = "rgba(124,58,237,0.06)";
-          e.target.style.boxShadow   = "0 0 0 3px rgba(124,58,237,0.12)";
+          e.target.style.borderColor = "rgba(124,58,237,0.75)";
+          e.target.style.background  = "rgba(124,58,237,0.07)";
+          e.target.style.boxShadow   = "0 0 0 3px rgba(124,58,237,0.14)";
         }}
         onBlur={e => {
-          e.target.style.borderColor = "rgba(255,255,255,0.08)";
-          e.target.style.background  = "rgba(255,255,255,0.04)";
+          e.target.style.borderColor = "rgba(255,255,255,0.1)";
+          e.target.style.background  = "rgba(255,255,255,0.05)";
           e.target.style.boxShadow   = "none";
         }}
       />
-    </div>
-  );
-}
-
-/* ── Page ────────────────────────────────────────────────── */
-export default function SignInPage() {
-  const [state, formAction, isPending] = useActionState(signInWithEmail, null);
-
-  const containerVariants = {
-    hidden: {},
-    show:   { transition: { staggerChildren: 0.07 } },
-  };
-  const itemVariants = {
-    hidden: { opacity:0, y:20, filter:"blur(8px)" },
-    show:   { opacity:1, y:0,  filter:"blur(0px)", transition:{ duration:0.5, ease:[0.16,1,0.3,1] } },
-  };
-
-  return (
-    <div style={{ minHeight:"100dvh", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"Inter, system-ui, sans-serif", padding:20 }}>
-      <Aurora />
-
-      <motion.div
-        variants={containerVariants} initial="hidden" animate="show"
-        style={{ position:"relative", zIndex:10, width:"100%", maxWidth:420 }}
-      >
-        {/* Logo mark */}
-        <motion.div variants={itemVariants} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:40, justifyContent:"center" }}>
-          <div style={{
-            width:44, height:44, borderRadius:14,
-            background:"linear-gradient(135deg, rgba(124,58,237,0.3), rgba(124,58,237,0.1))",
-            border:"1px solid rgba(124,58,237,0.4)",
-            display:"flex", alignItems:"center", justifyContent:"center",
-            boxShadow:"0 0 30px rgba(124,58,237,0.25)",
-          }}>
-            <Sparkles size={20} color="#a78bfa" />
-          </div>
-          <span style={{ fontSize:22, fontWeight:800, letterSpacing:"-0.02em", color:"#fff" }}>AYRA</span>
-        </motion.div>
-
-        {/* Heading */}
-        <motion.div variants={itemVariants} style={{ textAlign:"center", marginBottom:36 }}>
-          <h1 style={{
-            fontSize:32, fontWeight:800, letterSpacing:"-0.03em",
-            background:"linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.7) 100%)",
-            WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent",
-            margin:"0 0 10px",
-          }}>
-            Welcome back
-          </h1>
-          <p style={{ fontSize:14, color:"rgba(255,255,255,0.4)", margin:0, letterSpacing:"0.01em" }}>
-            Sign in to your private AI system
-          </p>
-        </motion.div>
-
-        {/* Card */}
-        <motion.div variants={itemVariants} style={{
-          background:"rgba(255,255,255,0.03)",
-          backdropFilter:"blur(24px)", WebkitBackdropFilter:"blur(24px)",
-          border:"1px solid rgba(255,255,255,0.08)",
-          borderRadius:24,
-          padding:32,
-          boxShadow:"0 32px 64px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.06) inset",
-        }}>
-          <form action={formAction} style={{ display:"flex", flexDirection:"column", gap:20 }}>
-            <PremiumInput label="Email" name="email" type="email" placeholder="you@example.com" autoComplete="email" />
-            <PremiumInput label="Password" name="password" type="password" placeholder="••••••••" autoComplete="current-password" />
-
-            {/* Error */}
-            {state?.error && (
-              <motion.div
-                initial={{ opacity:0, y:-8, scale:0.97 }}
-                animate={{ opacity:1, y:0,  scale:1 }}
-                style={{
-                  display:"flex", alignItems:"center", gap:10,
-                  background:"rgba(244,63,94,0.08)",
-                  border:"1px solid rgba(244,63,94,0.25)",
-                  borderRadius:12, padding:"12px 14px",
-                  fontSize:13, color:"#fb7185",
-                }}
-              >
-                <div style={{ width:6, height:6, borderRadius:"50%", background:"#f43f5e", flexShrink:0 }} />
-                {state.error}
-              </motion.div>
-            )}
-
-            <div style={{ paddingTop:4 }}>
-              <MagneticButton loading={isPending}>
-                {isPending ? "Signing in…" : "Sign in"}
-              </MagneticButton>
-            </div>
-          </form>
-        </motion.div>
-
-        {/* Footer */}
-        <motion.p variants={itemVariants} style={{ textAlign:"center", marginTop:24, fontSize:13, color:"rgba(255,255,255,0.25)" }}>
-          No account?{" "}
-          <Link href="/auth/sign-up" style={{ color:"#a78bfa", textDecoration:"none", fontWeight:600 }}
-            onMouseEnter={e => (e.currentTarget as HTMLElement).style.color="#c4b5fd"}
-            onMouseLeave={e => (e.currentTarget as HTMLElement).style.color="#a78bfa"}
-          >
-            Create one →
-          </Link>
-        </motion.p>
-
-        {/* Privacy badge */}
-        <motion.div variants={itemVariants} style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:6, marginTop:20 }}>
-          <div style={{ width:6, height:6, borderRadius:"50%", background:"#10b981", animation:"pulse 2s infinite" }} />
-          <span style={{ fontSize:11, color:"rgba(255,255,255,0.2)", letterSpacing:"0.05em" }}>
-            End-to-end private · Stored in your Neon DB
-          </span>
-        </motion.div>
-      </motion.div>
     </div>
   );
 }
