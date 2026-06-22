@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useEffect } from "react";
+import { useActionState, useRef } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { signInWithEmail } from "./actions";
 import Link from "next/link";
@@ -8,9 +8,8 @@ import { Loader2, ArrowRight } from "lucide-react";
 import Image from "next/image";
 
 function GlobalStyles() {
-  useEffect(() => {
-    const style = document.createElement("style");
-    style.textContent = `
+  return (
+    <style>{`
       body { background:#000 !important; margin:0; padding:0; }
       input::placeholder { color:rgba(255,255,255,0.2) !important; }
       input { color-scheme:dark; }
@@ -24,21 +23,15 @@ function GlobalStyles() {
         33%      { transform:translate(-50px,70px) scale(0.85); }
         66%      { transform:translate(80px,-30px) scale(1.1); }
       }
-      @keyframes logoSpin {
-        from { transform:rotate(0deg); }
-        to   { transform:rotate(360deg); }
-      }
+      @keyframes logoSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
       @keyframes logoPulse {
-        0%,100% { box-shadow: 0 0 24px rgba(180,140,90,0.3), 0 0 60px rgba(180,140,90,0.1); }
-        50%      { box-shadow: 0 0 40px rgba(180,140,90,0.5), 0 0 80px rgba(180,140,90,0.2); }
+        0%,100%{box-shadow:0 0 24px rgba(180,140,90,0.3),0 0 60px rgba(180,140,90,0.1)}
+        50%{box-shadow:0 0 40px rgba(180,140,90,0.5),0 0 80px rgba(180,140,90,0.2)}
       }
       @keyframes shimmer { from{transform:translateX(-100%)} to{transform:translateX(300%)} }
       @keyframes fadein  { from{opacity:0;transform:translateY(14px);filter:blur(6px)} to{opacity:1;transform:translateY(0);filter:blur(0)} }
-    `;
-    document.head.appendChild(style);
-    return () => document.head.removeChild(style);
-  }, []);
-  return null;
+    `}</style>
+  );
 }
 
 function Field({ label, name, type="text", placeholder, autoComplete }: {
@@ -89,78 +82,52 @@ export default function SignInPage() {
     }}>
       <GlobalStyles />
 
-      {/* ── Aurora background ── */}
+      {/* Aurora background */}
       <div style={{ position:"fixed", inset:0, pointerEvents:"none", overflow:"hidden" }}>
-        {/* Warm gold orb top-right */}
         <div style={{
           position:"absolute", top:"-5%", right:"5%", width:700, height:700, borderRadius:"50%",
           background:"radial-gradient(circle, rgba(180,130,60,0.12) 0%, rgba(180,130,60,0.03) 45%, transparent 70%)",
           filter:"blur(60px)", animation:"orbFloat1 22s ease-in-out infinite",
         }} />
-        {/* Cool violet orb bottom-left */}
         <div style={{
           position:"absolute", bottom:"0%", left:"5%", width:550, height:550, borderRadius:"50%",
           background:"radial-gradient(circle, rgba(124,58,237,0.1) 0%, rgba(124,58,237,0.02) 50%, transparent 70%)",
           filter:"blur(60px)", animation:"orbFloat2 28s ease-in-out infinite",
         }} />
-        {/* Dot grid */}
         <div style={{
           position:"absolute", inset:0,
           backgroundImage:"radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px)",
           backgroundSize:"28px 28px",
         }} />
-        {/* Radial vignette */}
         <div style={{
           position:"absolute", inset:0,
           background:"radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.75) 100%)",
         }} />
       </div>
 
-      {/* ── Content ── */}
+      {/* Content */}
       <div style={{ position:"relative", zIndex:10, width:"100%", maxWidth:380 }}>
 
-        {/* ── LOGO ── */}
+        {/* Logo */}
         <div style={{ display:"flex", flexDirection:"column", alignItems:"center", marginBottom:36, animation:"fadein 0.6s ease both" }}>
-          {/* Circular logo with gold ring */}
           <div style={{ position:"relative", marginBottom:18 }}>
-            {/* Spinning outer ring */}
             <div style={{
-              position:"absolute", inset:-3,
-              borderRadius:"50%",
+              position:"absolute", inset:-3, borderRadius:"50%",
               background:"conic-gradient(from 0deg, rgba(180,140,90,0.8) 0%, rgba(180,140,90,0.1) 40%, rgba(180,140,90,0.8) 60%, rgba(180,140,90,0.1) 80%, rgba(180,140,90,0.8) 100%)",
               animation:"logoSpin 6s linear infinite",
             }} />
-            {/* Static gold ring */}
-            <div style={{
-              position:"absolute", inset:-1, borderRadius:"50%",
-              border:"1px solid rgba(180,140,90,0.3)",
-            }} />
-            {/* Image */}
-            <div style={{
-              width:88, height:88, borderRadius:"50%", overflow:"hidden",
-              position:"relative", zIndex:1,
-              animation:"logoPulse 4s ease-in-out infinite",
-            }}>
-              <Image
-                src="/ayra-logo.jpeg"
-                alt="AYRA"
-                width={88} height={88}
-                style={{ width:"100%", height:"100%", objectFit:"cover", borderRadius:"50%" }}
-                priority
-              />
+            <div style={{ position:"absolute", inset:-1, borderRadius:"50%", border:"1px solid rgba(180,140,90,0.3)" }} />
+            <div style={{ width:88, height:88, borderRadius:"50%", overflow:"hidden", position:"relative", zIndex:1, animation:"logoPulse 4s ease-in-out infinite" }}>
+              <Image src="/ayra-logo.jpeg" alt="AYRA" width={88} height={88}
+                style={{ width:"100%", height:"100%", objectFit:"cover", borderRadius:"50%" }} priority />
             </div>
           </div>
-
-          {/* Wordmark */}
           <div style={{ textAlign:"center" }}>
             <div style={{
               fontSize:28, fontWeight:800, letterSpacing:"0.12em",
               background:"linear-gradient(135deg, #d4b896 0%, #fff 40%, #c9a87c 80%, #fff 100%)",
-              WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent",
-              lineHeight:1,
-            }}>
-              AYRA
-            </div>
+              WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", lineHeight:1,
+            }}>AYRA</div>
             <div style={{ fontSize:10, letterSpacing:"0.25em", color:"rgba(180,140,90,0.6)", marginTop:5, textTransform:"uppercase" as const, fontWeight:500 }}>
               — v1.0 —
             </div>
@@ -190,7 +157,7 @@ export default function SignInPage() {
         }}>
           <form action={formAction} style={{ display:"flex", flexDirection:"column", gap:18 }}>
             <Field label="Email address" name="email" type="email" placeholder="you@example.com" autoComplete="email" />
-            <Field label="Password"      name="password" type="password" placeholder="••••••••" autoComplete="current-password" />
+            <Field label="Password" name="password" type="password" placeholder="••••••••" autoComplete="current-password" />
 
             {state?.error && (
               <motion.div
@@ -206,7 +173,6 @@ export default function SignInPage() {
               </motion.div>
             )}
 
-            {/* CTA button */}
             <motion.button
               ref={btnRef} type="submit" disabled={isPending}
               onMouseMove={e => {
@@ -219,7 +185,6 @@ export default function SignInPage() {
               style={{ x:sx, y:sy, position:"relative", overflow:"hidden", background:"none", border:"none", padding:0, cursor:"pointer", marginTop:4 }}
               whileTap={{ scale:0.97 }}
             >
-              {/* shimmer */}
               <div style={{
                 position:"absolute", inset:0, zIndex:1, pointerEvents:"none",
                 background:"linear-gradient(90deg,transparent,rgba(255,255,255,0.09),transparent)",

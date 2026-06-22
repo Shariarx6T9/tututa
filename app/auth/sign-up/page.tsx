@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useEffect } from "react";
+import { useActionState, useRef } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { signUpWithEmail } from "./actions";
 import Link from "next/link";
@@ -8,9 +8,8 @@ import { Loader2, ArrowRight, Check } from "lucide-react";
 import Image from "next/image";
 
 function GlobalStyles() {
-  useEffect(() => {
-    const style = document.createElement("style");
-    style.textContent = `
+  return (
+    <style>{`
       body { background:#000 !important; margin:0; padding:0; }
       input::placeholder { color:rgba(255,255,255,0.2) !important; }
       input { color-scheme:dark; }
@@ -20,11 +19,8 @@ function GlobalStyles() {
       @keyframes logoPulse { 0%,100%{box-shadow:0 0 24px rgba(180,140,90,0.3),0 0 60px rgba(180,140,90,0.1)} 50%{box-shadow:0 0 40px rgba(180,140,90,0.5),0 0 80px rgba(180,140,90,0.2)} }
       @keyframes shimmer   { from{transform:translateX(-100%)} to{transform:translateX(300%)} }
       @keyframes fadein    { from{opacity:0;transform:translateY(14px);filter:blur(6px)} to{opacity:1;transform:translateY(0);filter:blur(0)} }
-    `;
-    document.head.appendChild(style);
-    return () => document.head.removeChild(style);
-  }, []);
-  return null;
+    `}</style>
+  );
 }
 
 function Field({ label, name, type="text", placeholder, autoComplete, hint }: {
@@ -117,7 +113,8 @@ export default function SignUpPage() {
             }} />
             <div style={{ position:"absolute", inset:-1, borderRadius:"50%", border:"1px solid rgba(180,140,90,0.25)" }} />
             <div style={{ width:72, height:72, borderRadius:"50%", overflow:"hidden", position:"relative", zIndex:1, animation:"logoPulse 4s ease-in-out infinite" }}>
-              <Image src="/ayra-logo.jpeg" alt="AYRA" width={72} height={72} style={{ width:"100%", height:"100%", objectFit:"cover", borderRadius:"50%" }} priority />
+              <Image src="/ayra-logo.jpeg" alt="AYRA" width={72} height={72}
+                style={{ width:"100%", height:"100%", objectFit:"cover", borderRadius:"50%" }} priority />
             </div>
           </div>
           <div style={{ textAlign:"center" }}>
@@ -168,11 +165,11 @@ export default function SignUpPage() {
         }}>
           <form action={formAction} style={{ display:"flex", flexDirection:"column", gap:14 }}>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-              <Field label="Full name" name="name"    placeholder="Shariar" autoComplete="name" />
-              <Field label="Email"     name="email"   type="email" placeholder="you@example.com" autoComplete="email" />
+              <Field label="Full name" name="name"   placeholder="Shariar" autoComplete="name" />
+              <Field label="Email"     name="email"  type="email" placeholder="you@example.com" autoComplete="email" />
             </div>
-            <Field label="Password"  name="password"  type="password" placeholder="Min. 8 characters" autoComplete="new-password" hint="Letters, numbers and symbols" />
-            <Field label="Confirm"   name="confirm"   type="password" placeholder="Repeat password" autoComplete="new-password" />
+            <Field label="Password" name="password" type="password" placeholder="Min. 8 characters" autoComplete="new-password" hint="Letters, numbers and symbols" />
+            <Field label="Confirm"  name="confirm"  type="password" placeholder="Repeat password" autoComplete="new-password" />
 
             {state?.error && (
               <motion.div
