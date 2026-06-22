@@ -7,33 +7,6 @@ import Link from "next/link";
 import { Loader2, ArrowRight } from "lucide-react";
 import Image from "next/image";
 
-function GlobalStyles() {
-  return (
-    <style>{`
-      body { background:#000 !important; margin:0; padding:0; }
-      input::placeholder { color:rgba(255,255,255,0.2) !important; }
-      input { color-scheme:dark; }
-      @keyframes orbFloat1 {
-        0%,100% { transform:translate(0,0) scale(1); }
-        33%      { transform:translate(60px,-40px) scale(1.15); }
-        66%      { transform:translate(-30px,60px) scale(0.9); }
-      }
-      @keyframes orbFloat2 {
-        0%,100% { transform:translate(0,0) scale(1); }
-        33%      { transform:translate(-50px,70px) scale(0.85); }
-        66%      { transform:translate(80px,-30px) scale(1.1); }
-      }
-      @keyframes logoSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-      @keyframes logoPulse {
-        0%,100%{box-shadow:0 0 24px rgba(180,140,90,0.3),0 0 60px rgba(180,140,90,0.1)}
-        50%{box-shadow:0 0 40px rgba(180,140,90,0.5),0 0 80px rgba(180,140,90,0.2)}
-      }
-      @keyframes shimmer { from{transform:translateX(-100%)} to{transform:translateX(300%)} }
-      @keyframes fadein  { from{opacity:0;transform:translateY(14px);filter:blur(6px)} to{opacity:1;transform:translateY(0);filter:blur(0)} }
-    `}</style>
-  );
-}
-
 function Field({ label, name, type="text", placeholder, autoComplete }: {
   label:string; name:string; type?:string; placeholder:string; autoComplete?:string;
 }) {
@@ -78,32 +51,19 @@ export default function SignInPage() {
       position:"fixed", inset:0,
       display:"flex", alignItems:"center", justifyContent:"center",
       fontFamily:"Inter, system-ui, -apple-system, sans-serif",
-      background:"#000", overflowY:"auto", padding:"24px 16px",
+      overflowY:"auto", padding:"24px 16px",
     }}>
-      <GlobalStyles />
-
-      {/* Aurora background */}
-      <div style={{ position:"fixed", inset:0, pointerEvents:"none", overflow:"hidden" }}>
-        <div style={{
-          position:"absolute", top:"-5%", right:"5%", width:700, height:700, borderRadius:"50%",
-          background:"radial-gradient(circle, rgba(180,130,60,0.12) 0%, rgba(180,130,60,0.03) 45%, transparent 70%)",
-          filter:"blur(60px)", animation:"orbFloat1 22s ease-in-out infinite",
-        }} />
-        <div style={{
-          position:"absolute", bottom:"0%", left:"5%", width:550, height:550, borderRadius:"50%",
-          background:"radial-gradient(circle, rgba(124,58,237,0.1) 0%, rgba(124,58,237,0.02) 50%, transparent 70%)",
-          filter:"blur(60px)", animation:"orbFloat2 28s ease-in-out infinite",
-        }} />
-        <div style={{
-          position:"absolute", inset:0,
-          backgroundImage:"radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px)",
-          backgroundSize:"28px 28px",
-        }} />
-        <div style={{
-          position:"absolute", inset:0,
-          background:"radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.75) 100%)",
-        }} />
-      </div>
+      <style>{`
+        input::placeholder { color:rgba(255,255,255,0.2) !important; }
+        input { color-scheme:dark; }
+        @keyframes logoSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        @keyframes logoPulse {
+          0%,100%{box-shadow:0 0 24px rgba(180,140,90,0.3),0 0 60px rgba(180,140,90,0.1)}
+          50%{box-shadow:0 0 40px rgba(180,140,90,0.5),0 0 80px rgba(180,140,90,0.2)}
+        }
+        @keyframes shimmer { from{transform:translateX(-100%)} to{transform:translateX(300%)} }
+        @keyframes fadein  { from{opacity:0;transform:translateY(14px);filter:blur(6px)} to{opacity:1;transform:translateY(0);filter:blur(0)} }
+      `}</style>
 
       {/* Content */}
       <div style={{ position:"relative", zIndex:10, width:"100%", maxWidth:380 }}>
@@ -148,11 +108,11 @@ export default function SignInPage() {
 
         {/* Glass card */}
         <div style={{
-          background:"rgba(255,255,255,0.03)",
-          backdropFilter:"blur(32px)", WebkitBackdropFilter:"blur(32px)",
-          border:"1px solid rgba(255,255,255,0.07)",
+          background:"rgba(255,255,255,0.04)",
+          backdropFilter:"blur(40px)", WebkitBackdropFilter:"blur(40px)",
+          border:"1px solid rgba(255,255,255,0.08)",
           borderRadius:22, padding:"28px 26px",
-          boxShadow:"0 40px 80px rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.05) inset",
+          boxShadow:"0 40px 80px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.06) inset",
           animation:"fadein 0.6s 0.14s ease both",
         }}>
           <form action={formAction} style={{ display:"flex", flexDirection:"column", gap:18 }}>
