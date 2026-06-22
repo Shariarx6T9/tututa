@@ -1,11 +1,11 @@
 "use client";
-
-// ============================================================
-// AYRA — Neon Auth Client
-// Used in client components for sign-in/sign-up/sign-out
-// and for reading session state via authClient.useSession()
-// ============================================================
-
 import { createAuthClient } from "@neondatabase/auth/next";
 
-export const authClient = createAuthClient();
+// Only create if env var is available (Neon Auth is optional)
+export const authClient =
+  typeof window !== "undefined"
+    ? createAuthClient()
+    : ({
+        useSession: () => ({ data: null, isPending: false }),
+        signOut: async () => {},
+      } as ReturnType<typeof createAuthClient>);

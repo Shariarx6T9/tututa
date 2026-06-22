@@ -1,12 +1,5 @@
 "use client";
-
-// ============================================================
-// AYRA — useSession Client Hook
-// Wraps Neon Auth useSession into an AYRA-typed interface
-// ============================================================
-
 import { useCallback }   from "react";
-import { authClient }    from "@/lib/auth/client";
 import { useRouter }     from "next/navigation";
 
 export interface SessionUser {
@@ -23,13 +16,24 @@ export function useSession(): {
 } {
   const router = useRouter();
 
-  // useSession from @neondatabase/auth/next exposes { data, isPending }
-  // We use the authClient directly to avoid a double-package import here.
-  // The session is read from the cookie via the client.
-  const { data: session, isPending } = authClient.useSession();
+  // Try to use authClient if Neon Auth is configured
+  let sessionData: { data: { user?: { id: string; name?: string | null; email?: string | null; image?: string | null } } | null; isPending: boolean } = { data: null, isPending: false };
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { authClient } = require("@/lib/auth/client");
+    sessionData = authClient.useSession();
+  } catch {
+    // no auth configured
+  }
+
+  const { data: session, isPending } = sessionData;
 
   const signOut = useCallback(async () => {
-    await authClient.signOut();
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { authClient } = require("@/lib/auth/client");
+      await authClient.signOut();
+    } catch { /* no auth */ }
     router.push("/auth/sign-in");
     router.refresh();
   }, [router]);

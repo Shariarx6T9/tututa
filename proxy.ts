@@ -1,34 +1,23 @@
-// ============================================================
-// AYRA — Auth Middleware (proxy.ts for Next.js 16)
-// Protects all dashboard routes — redirects to sign-in if not authed
-// Note: In Next.js <16 rename this file to middleware.ts
-// ============================================================
+import { NextRequest, NextResponse } from "next/server";
 
-import { auth } from "@/lib/auth/server";
+// If Neon Auth is configured, use its middleware; otherwise pass through
+let authMiddleware: ((req: NextRequest) => Response | NextResponse) | null = null;
 
-export default auth.middleware({
-  loginUrl: "/auth/sign-in",
-});
+if (process.env.NEON_AUTH_BASE_URL && process.env.NEON_AUTH_COOKIE_SECRET) {
+  const { auth } = require("@/lib/auth/server");
+  if (auth) {
+    const handler = auth.middleware({ loginUrl: "/auth/sign-in" });
+    authMiddleware = handler;
+  }
+}
+
+export default function middleware(req: NextRequest) {
+  if (authMiddleware) return authMiddleware(req);
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [
-    /*
-     * Match all dashboard routes:
-     * /             → dashboard
-     * /chat, /chat/[id], /chat/new
-     * /memory
-     * /tasks
-     * /vault
-     * /code
-     * /studio
-     * /settings
-     *
-     * Exclude:
-     * /auth/*       → sign-in / sign-up pages
-     * /api/auth/*   → Neon Auth API handler
-     * /_next/*      → Next.js internals
-     * /uploads/*    → public uploaded files
-     */
     "/((?!auth|api/auth|_next/static|_next/image|uploads|favicon|icons).*)",
   ],
 };
