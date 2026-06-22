@@ -66,7 +66,7 @@ export async function requireSession(): Promise<SessionUser> {
   // Sync Neon Auth user → AYRA users table (idempotent)
   await getOrCreateUser(user);
 
-  return user!;
+  return user;
 }
 
 // ── getUserIdFromRequest ──────────────────────────────────────
