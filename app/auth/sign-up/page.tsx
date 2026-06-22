@@ -113,7 +113,7 @@ export default function SignUpPage() {
             }} />
             <div style={{ position:"absolute", inset:-1, borderRadius:"50%", border:"1px solid rgba(180,140,90,0.25)" }} />
             <div style={{ width:72, height:72, borderRadius:"50%", overflow:"hidden", position:"relative", zIndex:1, animation:"logoPulse 4s ease-in-out infinite" }}>
-              <Image src="/ayra-logo.jpeg" alt="AYRA" width={72} height={72}
+              <Image src="/ayra-logo.png" alt="AYRA" width={72} height={72}
                 style={{ width:"100%", height:"100%", objectFit:"cover", borderRadius:"50%" }} priority />
             </div>
           </div>

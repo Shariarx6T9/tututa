@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { JetBrains_Mono } from "next/font/google";
 import { Toaster } from "react-hot-toast";
+import { AyraBackground } from "@/components/ui/AyraBackground";
 import "./globals.css";
 
 const inter = Inter({
@@ -9,7 +10,6 @@ const inter = Inter({
   variable: "--font-sans",
   display: "swap",
 });
-
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
@@ -43,7 +43,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
-      <body className="antialiased">
+      <body className="antialiased" style={{ background: "#030305", minHeight: "100dvh" }}>
+        <AyraBackground />
         {children}
         <Toaster
           position="bottom-right"
