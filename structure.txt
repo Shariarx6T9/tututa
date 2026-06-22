@@ -1,5 +1,5 @@
 Folder PATH listing
-Volume serial number is 00000080 40C7:918D
+Volume serial number is 0000009E 40C7:918D
 C:.
 ¦   .env
 ¦   .env.example
@@ -141,6 +141,7 @@ C:.
 ¦   ¦       Sidebar.tsx
 ¦   ¦       
 ¦   +---ui
+¦           AyraBackground.tsx
 ¦           index.tsx
 ¦           QuantumOrb.tsx
 ¦           
@@ -72841,6 +72842,9 @@ C:.
 +---prisma
 ¦       schema.prisma
 ¦       seed.ts
+¦       
++---public
+¦       ayra-logo.png
 ¦       
 +---types
         index.ts
